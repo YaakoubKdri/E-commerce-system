@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  payment-postgres:
+    image: postgres:16
+    container_name: payment-postgres
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: payment
+      POSTGRES_USER: payment_user
+      POSTGRES_PASSWORD: payment_pass
+    volumes:
+      - payment_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payment_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  payment-adminer:
+    image: adminer
+    container_name: payment-adminer
+    ports:
+      - "8087:8080"
+    depends_on:
+      - payment-postgres
+
+volumes:
+  payment_pg_data:

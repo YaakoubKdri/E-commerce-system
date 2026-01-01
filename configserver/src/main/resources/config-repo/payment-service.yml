@@ -30,6 +30,10 @@ spring:
       kafka:
         binder:
           brokers: localhost:9092
+  kafka:
+    consumer:
+      group-id: payment-service-group
+      auto-offset-reset: earliest
 
 eureka:
   client:

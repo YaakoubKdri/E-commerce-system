@@ -31,6 +31,10 @@ spring:
         binder:
           brokers: localhost:9092
 
+  kafka:
+    consumer:
+      group-id: inventory-service-group
+
 eureka:
   client:
     service-url:

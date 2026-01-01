@@ -6,6 +6,8 @@ import com.kadri.common.event.OrderCreatedEvent;
 import com.kadri.orderservice.entity.Order;
 import com.kadri.orderservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,7 @@ import java.util.UUID;
 public class OrderService {
     private final OrderRepository repository;
     private final StreamBridge streamBridge;
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     public Long create(CreateOrderRequest request) {
         Order order = Order.builder()
@@ -35,7 +38,8 @@ public class OrderService {
                 request.getTotalAmount()
         );
 
-        streamBridge.send("orderCreated-out-0", event);
+        boolean sent = streamBridge.send("orderCreated-out-0", event);
+        log.info("Event sent? {}", sent);
         return order.getId();
     }
 }

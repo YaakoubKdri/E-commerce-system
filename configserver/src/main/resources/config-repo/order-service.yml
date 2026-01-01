@@ -22,6 +22,9 @@ spring:
       kafka:
         binder:
           brokers: localhost:9092
+  kafka:
+    consumer:
+      group-id: order-service-group
 
 eureka:
   client:

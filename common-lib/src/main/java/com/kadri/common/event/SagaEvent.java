@@ -6,10 +6,14 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-@NoArgsConstructor
+//@NoArgsConstructor
 @AllArgsConstructor
 @Data
 public abstract class SagaEvent {
     private String sagaId;
     private Instant timestamp;
+    protected SagaEvent() {
+        this.sagaId = null;
+        this.timestamp = null;
+    }
 }

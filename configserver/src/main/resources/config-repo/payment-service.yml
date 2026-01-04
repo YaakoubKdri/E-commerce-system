@@ -41,11 +41,37 @@ eureka:
       defaultZone: http://localhost:8761/eureka
 
 resilience4j:
+  timelimiter:
+    instances:
+      paymentGateway:
+        timeout-duration: 500ms
+
   circuitbreaker:
     instances:
       paymentGateway:
+        sliding-window-type: COUNT_BASED
         sliding-window-size: 10
         failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+
+  bulkhead:
+    instances:
+      paymentGateway:
+        max-concurrent-calls: 5
+        max-wait-duration: 0
+
+  retry:
+    instances:
+      paymentGateway:
+        max-attempts: 3
+        wait-duration: 200ms
+        retry-exceptions:
+          - java.util.concurrent.TimeoutException
+
+
+
 
 management:
   endpoints:

@@ -6,6 +6,7 @@ import com.kadri.common.event.PaymentFailedEvent;
 import com.kadri.common.event.PaymentProcessedEvent;
 import com.kadri.paymentservice.entity.Payment;
 import com.kadri.paymentservice.repository.PaymentRepository;
+import com.kadri.paymentservice.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -20,10 +21,11 @@ public class PaymentSagaListener {
 
     private final PaymentRepository repository;
     private final StreamBridge streamBridge;
+    private final PaymentService paymentService;
 
     @KafkaListener(topics = "inventory-reserved")
     public void handleInventoryReserved(InventoryReservedEvent event){
-        boolean success = simulatePayment();
+        boolean success = paymentService.processPayment().join();
 
         Payment payment = Payment.builder()
                 .orderId(event.getOrderId())
@@ -53,8 +55,8 @@ public class PaymentSagaListener {
                     ));
         }
     }
-
-    private boolean simulatePayment() {
-        return Math.random() > 0.3; // 70% success
-    }
+//
+//    private boolean simulatePayment() {
+//        return Math.random() > 0.3; // 70% success
+//    }
 }

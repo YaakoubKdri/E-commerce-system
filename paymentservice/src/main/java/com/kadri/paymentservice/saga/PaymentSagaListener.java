@@ -5,12 +5,15 @@ import com.kadri.common.event.InventoryReservedEvent;
 import com.kadri.common.event.PaymentFailedEvent;
 import com.kadri.common.event.PaymentProcessedEvent;
 import com.kadri.paymentservice.entity.Payment;
+import com.kadri.paymentservice.entity.ProcessedEvent;
 import com.kadri.paymentservice.repository.PaymentRepository;
+import com.kadri.paymentservice.repository.ProcessedEventRepository;
 import com.kadri.paymentservice.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -22,9 +25,14 @@ public class PaymentSagaListener {
     private final PaymentRepository repository;
     private final StreamBridge streamBridge;
     private final PaymentService paymentService;
+    private final ProcessedEventRepository processedEventRepository;
 
     @KafkaListener(topics = "inventory-reserved")
+    @Transactional
     public void handleInventoryReserved(InventoryReservedEvent event){
+        if(processedEventRepository.existsById(event.getSagaId())){
+            return;
+        }
         boolean success = paymentService.processPayment().join();
 
         Payment payment = Payment.builder()
@@ -33,6 +41,9 @@ public class PaymentSagaListener {
                 .createdAt(Instant.now())
                 .build();
 
+        processedEventRepository.save(
+                new ProcessedEvent(event.getSagaId(), Instant.now())
+        );
         if(success){
             payment.setStatus(PaymentStatus.SUCCESS);
             repository.save(payment);
